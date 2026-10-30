@@ -8,6 +8,7 @@ import org.jf.dexlib2.iface.instruction.ReferenceInstruction;
 import org.jf.dexlib2.iface.reference.MethodReference;
 import org.jf.dexlib2.immutable.ImmutableMethod;
 import org.jf.dexlib2.immutable.ImmutableMethodImplementation;
+import org.jf.dexlib2.immutable.instruction.ImmutableInstruction10x;
 import org.jf.dexlib2.immutable.instruction.ImmutableInstruction35c;
 import org.jf.dexlib2.immutable.reference.ImmutableMethodReference;
 
@@ -28,8 +29,15 @@ public class patchLaunchMethod {
 
         for (int i = 0; i < o_ins.size(); i++) {
             Instruction inst = o_ins.get(i);
-            n_ins.add(inst);
             int u = inst.getCodeUnits();
+
+            if (inst.getOpcode() == Opcode.GOTO || inst.getOpcode() == Opcode.GOTO_16 || inst.getOpcode() == Opcode.GOTO_32) {
+                n_ins.add(new ImmutableInstruction10x(Opcode.RETURN_VOID));
+                c_off += u;
+                continue;
+            }
+
+            n_ins.add(inst);
             if (inst instanceof ReferenceInstruction) {
                 ReferenceInstruction r_i = (ReferenceInstruction) inst;
                 if (r_i.getReference() instanceof MethodReference) {
